@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PASSCOM - Viagens Disponíveis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Viagens Disponíveis</h2>
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>Origem</th>
+                    <th>Destino</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for viagem_id, viagem in viagens.items() %}
+                <tr>
+                    <td>{{ viagem.origem }}</td>
+                    <td>{{ viagem.destino }}</td>
+                    <td>
+                        <a href="{{ url_for('reservar', viagem_id=viagem_id, trecho_id='1') }}" class="btn btn-primary">Selecionar Viagem</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Botão para visualizar reservas -->
+        <a href="{{ url_for('visualizar_reservas') }}" class="btn btn-success mt-3">Minhas Reservas</a>
+    </div>
+</body>
+</html>
