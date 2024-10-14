@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Escolher Servidor{% endblock %}
+
+{% block content %}
+<h2>Escolha um Servidor para se Conectar</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label for="servidor" class="form-label">Selecione o Servidor:</label>
+        <select class="form-select" id="servidor" name="servidor" required>
+            {% for id, nome in servidores.items() %}
+            <option value="{{ id }}">{{ nome }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Conectar</button>
+</form>
+{% endblock %}
