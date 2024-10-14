@@ -9,6 +9,17 @@
 <body>
     <div class="container mt-5">
         <h2>Login</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert alert-dismissible fade show">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
         <form method="POST">
             <div class="mb-3">
                 <label for="cliente_id" class="form-label">Cliente ID</label>
@@ -20,7 +31,8 @@
             </div>
             <button type="submit" class="btn btn-primary">Entrar</button>
         </form>
-        <a href="/registrar" class="btn btn-link mt-3">Criar uma nova conta</a>
+
+        <a href="{{ url_for('registrar') }}" class="btn btn-link mt-3">Criar uma nova conta</a>
     </div>
 </body>
 </html>
