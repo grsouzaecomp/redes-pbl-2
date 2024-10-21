@@ -6,6 +6,13 @@ app = Flask(__name__)
 # Trechos de voos disponíveis para a Companhia C
 voos = {
     "3": {"nome": "Curitiba-Porto Alegre", "poltronas": [1, 2, 3]},
+    "6": {"nome": "Belo Horizonte-Salvador", "poltronas": [4,5,6]},
+    "9": {"nome": "Maceió-Salvador", "poltronas": [20,23,29]},
+    "12": {"nome": "Porto Alegre - Florianópolis", "poltronas": [12,17,19]},
+    "15": {"nome": "Cuiabá-Campo Grande", "poltronas": [21,24,27]},
+    "18": {"nome": "Fortaleza-Natal", "poltronas": [1,2,3]},
+    "21": {"nome": "Belo Horizonte-Rio de Janeiro", "poltronas": [2,9,24]},
+    "24": {"nome": "Manaus-Boa Vista", "poltronas": [10,12,33]},
 }
 
 reservas_temporarias = {}
