@@ -1,14 +1,37 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import requests
 from functools import wraps
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
+# Configuração do banco de dados
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reservas.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# Definição da tabela de reservas
+class Reserva(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.String(100), nullable=False)
+    trecho = db.Column(db.String(200), nullable=False)
+    poltrona = db.Column(db.String(10), nullable=False)
+    servidor = db.Column(db.String(50), nullable=False)  # Garantir que o servidor é armazenado
+
+# Inicializa o banco de dados
+with app.app_context():
+    db.create_all()  # Cria todas as tabelas no banco de dados
+
 # Simulação de um banco de dados de usuários
 usuarios = {}
-# Simulação de um banco de dados de reservas
-reservas = {}
+
+# Simulação de um banco de dados de reservas por servidor
+reservas_por_servidor = {
+    "1": {},  # Reservas do Servidor 1
+    "2": {},  # Reservas do Servidor 2
+    "3": {}   # Reservas do Servidor 3
+}
 
 # URLs das companhias aéreas
 COMPANHIA_A_URL = "http://localhost:5000"
@@ -21,18 +44,18 @@ viagens = {
         "origem": "Belem",
         "destino": "Porto Alegre",
         "trechos": {
-            "1": {"origem": "Belem", "destino": "São Paulo", "companhia": "A", "url": COMPANHIA_A_URL},
-            "2": {"origem": "São Paulo", "destino": "Curitiba", "companhia": "B", "url": COMPANHIA_B_URL},
-            "3": {"origem": "Curitiba", "destino": "Porto Alegre", "companhia": "C", "url": COMPANHIA_C_URL}
+            "1": {"origem": "Belem", "destino": "São Paulo", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
+            "2": {"origem": "São Paulo", "destino": "Curitiba", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
+            "3": {"origem": "Curitiba", "destino": "Porto Alegre", "companhia": "Companhia C", "url": COMPANHIA_C_URL}
         }
     },
     "2": {
         "origem": "Rio de Janeiro",
         "destino": "São Paulo",
         "trechos": {
-            "1": {"origem": "Rio de Janeiro", "destino": "São Paulo", "companhia": "A", "url": COMPANHIA_A_URL},
-            "2": {"origem": "São Paulo", "destino": "Porto Alegre", "companhia": "B", "url": COMPANHIA_B_URL},
-            "3": {"origem": "Porto Alegre", "destino": "Curitiba", "companhia": "C", "url": COMPANHIA_C_URL}
+            "1": {"origem": "Rio de Janeiro", "destino": "São Paulo", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
+            "2": {"origem": "São Paulo", "destino": "Porto Alegre", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
+            "3": {"origem": "Porto Alegre", "destino": "Curitiba", "companhia": "Companhia C", "url": COMPANHIA_C_URL}
         }
     }
 }
@@ -47,15 +70,39 @@ def login_requerido(f):
         return f(*args, **kwargs)
     return wrapper
 
+# Rota para escolher o servidor
+@app.route('/escolher-servidor', methods=['GET', 'POST'])
+def escolher_servidor():
+    if request.method == 'POST':
+        servidor = request.form['servidor']
+        session['servidor'] = servidor  # Armazenar o servidor na sessão
+        flash(f"Conectado ao servidor {servidor}", 'success')
+        return redirect(url_for('index'))
+
+    servidores_disponiveis = {
+        "1": "Servidor 1",
+        "2": "Servidor 2",
+        "3": "Servidor 3"
+    }
+    return render_template('escolher_servidor.html', servidores=servidores_disponiveis)
+
 # Página inicial com as viagens
 @app.route('/')
+@login_requerido
 def index():
+    if 'servidor' not in session:
+        return redirect(url_for('escolher_servidor'))
     return render_template('viagens.html', viagens=viagens)
 
 # Rota para iniciar a reserva do primeiro trecho
 @app.route('/reservar/<viagem_id>/<trecho_id>', methods=['GET', 'POST'])
 @login_requerido
 def reservar(viagem_id, trecho_id):
+    # Verificar se o servidor foi escolhido
+    if 'servidor' not in session:
+        return redirect(url_for('escolher_servidor'))
+
+    servidor_atual = session['servidor']
     trecho = viagens[viagem_id]["trechos"][trecho_id]
 
     if request.method == 'POST':
@@ -74,14 +121,11 @@ def reservar(viagem_id, trecho_id):
             response = requests.post(f"{trecho['url']}/reservar-assento", json=data)
             resultado = response.json()
 
-            # Mensagem de depuração
-            print(f"Response do servidor para reserva: {resultado}, Status: {response.status_code}")
-
             if response.status_code == 200:
-                # Armazenar a reserva
-                if cliente_id not in reservas:
-                    reservas[cliente_id] = []
-                reservas[cliente_id].append({
+                # Armazenar a reserva no servidor correto
+                if cliente_id not in reservas_por_servidor[servidor_atual]:
+                    reservas_por_servidor[servidor_atual][cliente_id] = []
+                reservas_por_servidor[servidor_atual][cliente_id].append({
                     'trecho': f"{trecho['origem']} → {trecho['destino']}",
                     'poltrona': poltrona,
                     'status': 'Reservado'
@@ -121,8 +165,9 @@ def registrar():
             flash('Cliente ID já registrado. Escolha outro.', 'danger')
         else:
             usuarios[cliente_id] = senha  # Armazenando a senha (não recomendado em produção)
-            flash('Registro bem-sucedido! Agora você pode fazer login.', 'success')
-            return redirect(url_for('login'))
+            session['cliente_id'] = cliente_id
+            flash('Registro bem-sucedido! Agora você pode escolher um servidor.', 'success')
+            return redirect(url_for('escolher_servidor'))
 
     return render_template('registrar.html')
 
@@ -133,13 +178,25 @@ def login():
         cliente_id = request.form['cliente_id']
         senha = request.form['senha']
 
-        # Verificar credenciais
-        if cliente_id in usuarios and usuarios[cliente_id] == senha:
-            session['cliente_id'] = cliente_id
-            flash('Login bem-sucedido!', 'success')
-            return redirect(url_for('index'))
-        else:
-            flash('Login ou senha incorretos', 'danger')
+        # Verificar se o cliente existe
+        if cliente_id not in usuarios:
+            flash('Cliente não encontrado. Por favor, registre-se primeiro.', 'danger')
+            return redirect(url_for('registrar'))
+
+        # Verificar se a senha está correta
+        if usuarios[cliente_id] != senha:
+            flash('Senha incorreta. Por favor, tente novamente.', 'danger')
+            return render_template('login.html')
+
+        # Login bem-sucedido, armazenar o cliente na sessão
+        session['cliente_id'] = cliente_id
+        flash('Login bem-sucedido!', 'success')
+        
+        # Redirecionar para a escolha de servidor se ainda não foi escolhido
+        if 'servidor' not in session:
+            return redirect(url_for('escolher_servidor'))
+        
+        return redirect(url_for('index'))
 
     return render_template('login.html')
 
@@ -147,6 +204,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('cliente_id', None)
+    session.pop('servidor', None)  # Remover também o servidor da sessão
     flash('Logout realizado com sucesso.', 'success')
     return redirect(url_for('login'))
 
@@ -155,7 +213,15 @@ def logout():
 @login_requerido
 def visualizar_reservas():
     cliente_id = session['cliente_id']
-    usuario_reservas = reservas.get(cliente_id, [])
+    servidor_atual = session['servidor']
+
+    # Verificar se o servidor foi escolhido
+    if not servidor_atual:
+        flash('Você precisa escolher um servidor antes de visualizar as reservas.', 'danger')
+        return redirect(url_for('escolher_servidor'))
+
+    # Buscar reservas no servidor atual
+    usuario_reservas = reservas_por_servidor[servidor_atual].get(cliente_id, [])
     return render_template('minhas_reservas.html', reservas=usuario_reservas)
 
 if __name__ == '__main__':
