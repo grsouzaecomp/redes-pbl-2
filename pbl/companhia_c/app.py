@@ -1,9 +1,13 @@
 from flask import Flask, jsonify, request
 from threading import Lock, Timer
+import redis
+import redis_lock
 
 app = Flask(__name__)
 
-# Trechos de voos disponíveis para a Companhia C
+# Configurar conexão com o Redis
+redis_client = redis.StrictRedis(host='redis_host', port=6379, db=0)
+
 voos = {
     "3": {"nome": "Curitiba-Porto Alegre", "poltronas": [1, 2, 3]},
     "6": {"nome": "Belo Horizonte-Salvador", "poltronas": [4,5,6]},
@@ -41,15 +45,19 @@ def reservar_assento():
     voo_id = data['voo_id']
     poltrona = data['poltrona']
 
-    with lock:
-        if voo_id not in voos or int(poltrona) not in voos[voo_id]['poltronas']:
-            return jsonify({'erro': 'Assento indisponível ou voo inválido'}), 400
+    lock_key = f"lock_voo_{voo_id}_poltrona_{poltrona}"
 
-        # Reservar assento temporariamente
-        voos[voo_id]['poltronas'].remove(int(poltrona))
-        reservas_temporarias[cliente_id] = {'voo': voos[voo_id]['nome'], 'poltrona': poltrona, 'voo_id': voo_id}
+    
+    # Tentativa de adquirir o lock distribuído
+    with redis_lock.Lock(redis_client, lock_key, expire=30):
+        with lock:
+            if voo_id not in voos or int(poltrona) not in voos[voo_id]['poltronas']:
+                return jsonify({'erro': 'Assento indisponível ou voo inválido'}), 400
 
-        Timer(RESERVA_TIMEOUT, liberar_reserva, [cliente_id, voo_id, int(poltrona)]).start()
+            voos[voo_id]['poltronas'].remove(int(poltrona))
+            reservas_temporarias[cliente_id] = {'voo': voos[voo_id]['nome'], 'poltrona': poltrona, 'voo_id': voo_id}
+
+            Timer(RESERVA_TIMEOUT, liberar_reserva, [cliente_id, voo_id, int(poltrona)]).start()
 
         return jsonify({'mensagem': f'Poltrona {poltrona} reservada temporariamente no voo {voos[voo_id]["nome"]}'}), 200
 
@@ -79,3 +87,47 @@ def ver_reservas(cliente_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5002)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
