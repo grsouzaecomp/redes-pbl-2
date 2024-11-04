@@ -1,37 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import requests
 from functools import wraps
-from flask_sqlalchemy import SQLAlchemy
+import redis
+import redis_lock
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
-# Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reservas.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-# Definição da tabela de reservas
-class Reserva(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cliente_id = db.Column(db.String(100), nullable=False)
-    trecho = db.Column(db.String(200), nullable=False)
-    poltrona = db.Column(db.String(10), nullable=False)
-    servidor = db.Column(db.String(50), nullable=False)  # Garantir que o servidor é armazenado
-
-# Inicializa o banco de dados
-with app.app_context():
-    db.create_all()  # Cria todas as tabelas no banco de dados
-
-# Simulação de um banco de dados de usuários
-usuarios = {}
-
-# Simulação de um banco de dados de reservas por servidor
-reservas_por_servidor = {
-    "1": {},  # Reservas do Servidor 1
-    "2": {},  # Reservas do Servidor 2
-    "3": {}   # Reservas do Servidor 3
-}
+# Configuração do Redis para descentralização
+redis_client = redis.StrictRedis(host='redis_host', port=6379, db=0)
 
 # URLs das companhias aéreas
 COMPANHIA_A_URL = "http://localhost:5000"
@@ -41,24 +18,80 @@ COMPANHIA_C_URL = "http://localhost:5002"
 # Definição de viagens (cada viagem tem 3 trechos)
 viagens = {
     "1": {
-        "origem": "Belem",
+        "origem": "São Paulo",
         "destino": "Porto Alegre",
         "trechos": {
-            "1": {"origem": "Belem", "destino": "São Paulo", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
-            "2": {"origem": "São Paulo", "destino": "Curitiba", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
+            "1": {"origem": "São Paulo", "destino": "Rio de Jnaeiro", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
+            "2": {"origem": "Rio de Janeiro", "destino": "Curitiba", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
             "3": {"origem": "Curitiba", "destino": "Porto Alegre", "companhia": "Companhia C", "url": COMPANHIA_C_URL}
         }
     },
     "2": {
-        "origem": "Rio de Janeiro",
+        "origem": "Brasília",
+        "destino": "Feira de Santana",
+        "trechos": {
+            "1": {"origem": "Brasília", "destino": "Belo Horizonte", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
+            "2": {"origem": "Belo Horizonte", "destino": "Salvador", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
+            "3": {"origem": "Salvador", "destino": "Feira de Santana", "companhia": "Companhia C", "url": COMPANHIA_C_URL}
+        }
+    },
+    "3": {
+        "origem": "Uberlândia",
+        "destino": "Salavdor",
+        "trechos": {
+            "1": {"origem": "Uberlândia", "destino": "Recife", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
+            "2": {"origem": "Recife", "destino": "Maceió", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
+            "3": {"origem": "Maceió", "destino": "Salvador", "companhia": "Companhia C", "url": COMPANHIA_C_URL}
+        }
+    },
+    "4": {
+        "origem": "São Paulo",
+        "destino": "Florianóplolis",
+        "trechos": {
+            "1": {"origem": "São Paulo", "destino": "Curitiba", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
+            "2": {"origem": "Curitiba", "destino": "Porto Alegre", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
+            "3": {"origem": "Porto Alegre", "destino": "Florianópolis", "companhia": "Companhia C", "url": COMPANHIA_C_URL}
+        }
+    },
+    "5": {
+        "origem": "Goiania",
+        "destino": "Amazônia",
+        "trechos": {
+            "1": {"origem": "Goiania", "destino": "Cuiabá", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
+            "2": {"origem": "Cuiabá", "destino": "Campo Grande", "companhia": "Companhia C", "url": COMPANHIA_C_URL},
+            "3": {"origem": "Campo Grande", "destino": "Amazonas", "companhia": "Companhia A", "url": COMPANHIA_A_URL}
+        }
+    },
+     "6": {
+        "origem": "Natal",
+        "destino": "Amapá",
+        "trechos": {
+            "1": {"origem": "Fortaleza", "destino": "Natal", "companhia": "Companhia C", "url": COMPANHIA_C_URL},
+            "2": {"origem": "Natal", "destino": "Belém", "companhia": "Companhia A ", "url": COMPANHIA_A_URL},
+            "3": {"origem": "Belém", "destino": "Amapá", "companhia": "Companhia B", "url": COMPANHIA_B_URL}
+        }
+     },
+      "7": {
+        "origem": "Salvador",
         "destino": "São Paulo",
         "trechos": {
-            "1": {"origem": "Rio de Janeiro", "destino": "São Paulo", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
-            "2": {"origem": "São Paulo", "destino": "Porto Alegre", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
-            "3": {"origem": "Porto Alegre", "destino": "Curitiba", "companhia": "Companhia C", "url": COMPANHIA_C_URL}
+            "1": {"origem": "Salvador", "destino": "Belo Horizonte", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
+            "2": {"origem": "Belo Horizonte", "destino": "Rio de Janeiro", "companhia": "Companhia C", "url": COMPANHIA_C_URL},
+            "3": {"origem": "Rio de Janeiro", "destino": "São Paulo", "companhia": "Companhia A", "url": COMPANHIA_A_URL}
         }
-    }
+      },
+       "8": {
+        "origem": "Manaus",
+        "destino": "Cuiabá",
+        "trechos": {
+            "1": {"origem": "Manaus", "destino": "Boa Vista", "companhia": "Companhia C", "url": COMPANHIA_C_URL},
+            "2": {"origem": "Boa Vista", "destino": "Brasília", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
+            "3": {"origem": "Brasília", "destino": "Cuiabá", "companhia": "Companhia A", "url": COMPANHIA_A_URL}
+        }
 }
+
+# Simulação de um banco de dados de usuários
+usuarios = {}
 
 # Função para verificar se o usuário está logado
 def login_requerido(f):
@@ -122,10 +155,9 @@ def reservar(viagem_id, trecho_id):
             resultado = response.json()
 
             if response.status_code == 200:
-                # Armazenar a reserva no servidor correto
-                if cliente_id not in reservas_por_servidor[servidor_atual]:
-                    reservas_por_servidor[servidor_atual][cliente_id] = []
-                reservas_por_servidor[servidor_atual][cliente_id].append({
+                # Armazenar a reserva no Redis
+                reserva_key = f"reserva:{cliente_id}:{servidor_atual}"
+                redis_client.hset(reserva_key, mapping={
                     'trecho': f"{trecho['origem']} → {trecho['destino']}",
                     'poltrona': poltrona,
                     'status': 'Reservado'
@@ -220,9 +252,19 @@ def visualizar_reservas():
         flash('Você precisa escolher um servidor antes de visualizar as reservas.', 'danger')
         return redirect(url_for('escolher_servidor'))
 
-    # Buscar reservas no servidor atual
-    usuario_reservas = reservas_por_servidor[servidor_atual].get(cliente_id, [])
-    return render_template('minhas_reservas.html', reservas=usuario_reservas)
+    # Buscar reservas no Redis
+    reserva_key = f"reserva:{cliente_id}:{servidor_atual}"
+    reservas = [redis_client.hgetall(reserva_key)] if redis_client.exists(reserva_key) else []
+    reservas_formatadas = [
+        {
+            'trecho': reserva[b'trecho'].decode(),
+            'poltrona': reserva[b'poltrona'].decode(),
+            'status': reserva[b'status'].decode()
+        }
+        for reserva in reservas
+    ]
+
+    return render_template('reservas.html', reservas=reservas_formatadas)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5003)
+    app.run(debug=True)

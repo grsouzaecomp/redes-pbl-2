@@ -5,18 +5,18 @@ import redis_lock
 
 app = Flask(__name__)
 
-# Configurar conexão com o Redis
+# Configurar conexão com o Redis distribuído
 redis_client = redis.StrictRedis(host='redis_host', port=6379, db=0)
 
 voos = {
     "1": {"nome": "São Paulo-Rio de Janeiro", "poltronas": [1, 2, 3]},
-    "4": {"nome": "Brasília-Salvador", "poltronas": [5,6,7]},
-    "7": {"nome": "Florianópolis-Curitiba", "poltronas": [9,12,15]},
-    "10": {"nome": "Recife-Fortaleza", "poltronas": [2,4,6]},
-    "13": {"nome": "Salvador-Porto Alegre", "poltronas": [3,9,11]},
-    "16": {"nome": "Manaus-Belém", "poltronas": [8,9,10]},
-    "19": {"nome": "São Luís-Teresina", "poltronas": [15,18,20]},
-    "22": {"nome": "Belém-Fortaleza", "poltronas": [2,6,12]},
+    "4": {"nome": "Brasília-Belo Horizonte", "poltronas": [5, 6, 7]},
+    "7": {"nome": "Uberlândia-Recife", "poltronas": [9, 12, 15]},
+    "10": {"nome": "São Paulo-Curitiba", "poltronas": [2, 4, 6]},
+    "13": {"nome": "Campo Grande-Amazonas", "poltronas": [3, 9, 11]},
+    "16": {"nome": "Natal-Belém", "poltronas": [8, 9, 10]},
+    "19": {"nome": "Rio de Janeiro-São Paulo", "poltronas": [15, 18, 20]},
+    "22": {"nome": "Brasília-Cuiabá", "poltronas": [2, 6, 12]},
 }
 
 reservas_temporarias = {}
@@ -44,7 +44,6 @@ def reservar_assento():
     
     lock_key = f"lock_voo_{voo_id}_poltrona_{poltrona}"
 
-    # Tentativa de adquirir o lock distribuído
     with redis_lock.Lock(redis_client, lock_key, expire=30):
         with lock:
             if voo_id not in voos or int(poltrona) not in voos[voo_id]['poltronas']:
