@@ -21,7 +21,7 @@ viagens = {
         "origem": "São Paulo",
         "destino": "Porto Alegre",
         "trechos": {
-            "1": {"origem": "São Paulo", "destino": "Rio de Jnaeiro", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
+            "1": {"origem": "São Paulo", "destino": "Rio de Janeiro", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
             "2": {"origem": "Rio de Janeiro", "destino": "Curitiba", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
             "3": {"origem": "Curitiba", "destino": "Porto Alegre", "companhia": "Companhia C", "url": COMPANHIA_C_URL}
         }
@@ -37,7 +37,7 @@ viagens = {
     },
     "3": {
         "origem": "Uberlândia",
-        "destino": "Salavdor",
+        "destino": "Salvador",
         "trechos": {
             "1": {"origem": "Uberlândia", "destino": "Recife", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
             "2": {"origem": "Recife", "destino": "Maceió", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
@@ -46,7 +46,7 @@ viagens = {
     },
     "4": {
         "origem": "São Paulo",
-        "destino": "Florianóplolis",
+        "destino": "Florianópolis",
         "trechos": {
             "1": {"origem": "São Paulo", "destino": "Curitiba", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
             "2": {"origem": "Curitiba", "destino": "Porto Alegre", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
@@ -55,7 +55,7 @@ viagens = {
     },
     "5": {
         "origem": "Goiania",
-        "destino": "Amazônia",
+        "destino": "Amazonas",
         "trechos": {
             "1": {"origem": "Goiania", "destino": "Cuiabá", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
             "2": {"origem": "Cuiabá", "destino": "Campo Grande", "companhia": "Companhia C", "url": COMPANHIA_C_URL},
@@ -67,7 +67,7 @@ viagens = {
         "destino": "Amapá",
         "trechos": {
             "1": {"origem": "Fortaleza", "destino": "Natal", "companhia": "Companhia C", "url": COMPANHIA_C_URL},
-            "2": {"origem": "Natal", "destino": "Belém", "companhia": "Companhia A ", "url": COMPANHIA_A_URL},
+            "2": {"origem": "Natal", "destino": "Belém", "companhia": "Companhia A", "url": COMPANHIA_A_URL},
             "3": {"origem": "Belém", "destino": "Amapá", "companhia": "Companhia B", "url": COMPANHIA_B_URL}
         }
      },
