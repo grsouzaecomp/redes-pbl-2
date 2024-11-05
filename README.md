@@ -16,8 +16,6 @@
   <center>gabasribeirosz@gmail.com & kcordeiro539@gmail.com</center>
 </div>
 
----
-
 # 1. Introdução
 
 <p style="text-align: justify;">
@@ -90,7 +88,6 @@
 <p style="text-align: justify">
  A aplicação utiliza threads para aumentar a eficiência no atendimento a múltiplas requisições simultâneas. O desempenho é otimizado pelo uso de threads, que permite que o servidor responda a várias requisições de reserva em paralelo.
 </p>
----
 
 # 4. Conclusão
 
@@ -101,8 +98,6 @@
 <p style="text-align: justify;">
   A implementação mostrou-se robusta e escalável para o uso em situações reais, e o sistema foi capaz de evitar conflitos de reserva e garantir a consistência dos dados. Futuras melhorias podem incluir o uso de um cache para otimizar o desempenho em ambientes com alta demanda, bem como a criação de uma interface gráfica para tornar o sistema mais acessível e intuitivo para os usuários finais.
 </p>
-
----
 
 # Referências
 
