@@ -137,7 +137,14 @@ def reservar(viagem_id, trecho_id):
         return redirect(url_for('escolher_servidor'))
 
     servidor_atual = session['servidor']
-    trecho = viagens[viagem_id]["trechos"][trecho_id]
+
+    # Tentar obter o trecho correspondente
+    trecho = viagens.get(viagem_id, {}).get("trechos", {}).get(trecho_id)
+
+    # Verificar se o trecho foi encontrado
+    if not trecho:
+        flash('Trecho não encontrado.', 'danger')
+        return redirect(url_for('index'))
 
     if request.method == 'POST':
         cliente_id = session['cliente_id']
@@ -169,23 +176,23 @@ def reservar(viagem_id, trecho_id):
                 # Verificar se é o último trecho
                 if trecho_id == "3":
                     flash("Todos os trechos reservados com sucesso.", "success")
-                    return redirect(url_for('index'))  # Redireciona para a página inicial
+                    return redirect(url_for('index'))
                 else:
                     next_trecho_id = str(int(trecho_id) + 1)
-                    return redirect(url_for('reservar', viagem_id=viagem_id, trecho_id=next_trecho_id))  # Próximo trecho
+                    return redirect(url_for('reservar', viagem_id=viagem_id, trecho_id=next_trecho_id))
 
             else:
                 flash(f"Erro na reserva: {resultado.get('erro', 'Erro desconhecido')}", 'danger')
 
         except Exception as e:
             flash(f"Erro ao conectar com a companhia: {e}", 'danger')
-            print(f"Erro ao conectar com a companhia: {e}")
 
     # Obter dados do voo atual para exibir ao cliente
     response = requests.get(f"{trecho['url']}/trechos-disponiveis")
     voos = response.json()
 
     return render_template('reservar.html', trecho=trecho, voos=voos[trecho_id])
+
 
 # Rota de registro
 @app.route('/registrar', methods=['GET', 'POST'])

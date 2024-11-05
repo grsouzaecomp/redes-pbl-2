@@ -3,22 +3,27 @@
 {% block title %}Reservar Assento{% endblock %}
 
 {% block content %}
-<h2>Reservar Assento: {{ trecho.origem }} → {{ trecho.destino }}</h2>
-<p><strong>Companhia Responsável:</strong> {{ trecho.companhia }}</p>  <!-- Exibe a companhia responsável -->
-<p><strong>Servidor:</strong> {{ session['servidor'] }}</p> <!-- Exibir servidor ao qual o cliente está logado -->
+{% if trecho %}
+    <h2>Reservar Assento: {{ trecho.origem }} → {{ trecho.destino }}</h2>
+    <p><strong>Companhia Responsável:</strong> {{ trecho.companhia }}</p>
+    <p><strong>Servidor:</strong> {{ session['servidor'] }}</p> <!-- Exibir servidor ao qual o cliente está logado -->
 
-<form method="POST">
-    <div class="mb-3">
-        <label for="poltrona" class="form-label">Escolha a Poltrona</label>
-        <select class="form-select" id="poltrona" name="poltrona" required>
-            <option value="">Selecione uma poltrona</option>
-            {% for poltrona in voos.poltronas %}
-            <option value="{{ poltrona }}">{{ poltrona }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Reservar</button>
-</form>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="poltrona" class="form-label">Escolha a Poltrona</label>
+            <select class="form-select" id="poltrona" name="poltrona" required>
+                <option value="">Selecione uma poltrona</option>
+                {% for poltrona in voos.poltronas %}
+                <option value="{{ poltrona }}">{{ poltrona }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Reservar</button>
+    </form>
 
-<a href="{{ url_for('index') }}" class="btn btn-link mt-3">Cancelar e voltar</a>
+    <a href="{{ url_for('index') }}" class="btn btn-link mt-3">Cancelar e voltar</a>
+{% else %}
+    <h2>Erro: Trecho não encontrado.</h2>
+    <a href="{{ url_for('index') }}" class="btn btn-link mt-3">Voltar para a página inicial</a>
+{% endif %}
 {% endblock %}

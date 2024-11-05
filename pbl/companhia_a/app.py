@@ -6,7 +6,7 @@ import redis_lock
 app = Flask(__name__)
 
 # Configurar conexão com o Redis distribuído
-redis_client = redis.StrictRedis(host='redis_host', port=6379, db=0)
+redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
 
 voos = {
     "1": {"nome": "São Paulo-Rio de Janeiro", "poltronas": [1, 2, 3]},
@@ -78,4 +78,4 @@ def ver_reservas(cliente_id):
     return jsonify({'reservas': reservas})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5003)
