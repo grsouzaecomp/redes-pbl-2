@@ -8,10 +8,10 @@ app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
 # Configuração do Redis para descentralização
-redis_client = redis.StrictRedis(host='redis_host', port=6379, db=0)
+redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
 
 # URLs das companhias aéreas
-COMPANHIA_A_URL = "http://localhost:5000"
+COMPANHIA_A_URL = "http://localhost:5003"
 COMPANHIA_B_URL = "http://localhost:5001"
 COMPANHIA_C_URL = "http://localhost:5002"
 
@@ -88,6 +88,7 @@ viagens = {
             "2": {"origem": "Boa Vista", "destino": "Brasília", "companhia": "Companhia B", "url": COMPANHIA_B_URL},
             "3": {"origem": "Brasília", "destino": "Cuiabá", "companhia": "Companhia A", "url": COMPANHIA_A_URL}
         }
+     }
 }
 
 # Simulação de um banco de dados de usuários
@@ -264,7 +265,7 @@ def visualizar_reservas():
         for reserva in reservas
     ]
 
-    return render_template('reservas.html', reservas=reservas_formatadas)
+    return render_template('reservar.html', reservas=reservas_formatadas)
 
 if __name__ == '__main__':
     app.run(debug=True)
