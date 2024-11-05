@@ -82,13 +82,13 @@
   O sistema demonstrou um bom desempenho durante os testes, processando as reservas sem conflitos, mesmo com múltiplos clientes tentando reservar assentos ao mesmo tempo. A divisão das reservas por servidor foi feita de forma equilibrada, com cada servidor registrando reservas em um banco de dados centralizado, permitindo um controle unificado de todas as reservas realizadas.
 </p>
 
-##3.2 Gerenciamento de Dispositivo
+## 3.2 Gerenciamento de Dispositivo
 
 <p style="text-align: justify">
  O gerenciamento de dispositivos ou configurações remotas específicas para cada servidor (como iniciar, parar ou alterar valores) não é implementado diretamente. No entanto, as operações de autenticação e escolha de servidor permitem que o cliente selecione qual servidor acessar para realizar as reservas.
 </p>
 
-##3.3. Desempenho
+## 3.3. Desempenho
 <p style="text-align: justify">
  A aplicação utiliza threads para aumentar a eficiência no atendimento a múltiplas requisições simultâneas. O desempenho é otimizado pelo uso de threads, que permite que o servidor responda a várias requisições de reserva em paralelo.
 </p>
