@@ -28,8 +28,6 @@
   O sistema utiliza uma arquitetura distribuída, onde o cliente interage com diferentes servidores para realizar reservas, e as informações são armazenadas em um banco de dados centralizado. Cada servidor oferece suporte a múltiplas conexões simultâneas, permitindo que vários clientes interajam com o sistema ao mesmo tempo. A aplicação foi desenvolvida em Python utilizando Flask para a comunicação cliente-servidor via HTTP e threads para tratar as conexões concorrentes.
 </p>
 
----
-
 # 2. Metodologia
 
 <p style="text-align: justify;">
