@@ -32,6 +32,12 @@
   A arquitetura do sistema é composta por três partes principais: cliente, servidores de reservas e um banco de dados centralizado. Cada servidor representa uma companhia aérea que gerencia as reservas para um trecho específico de uma viagem, e o banco de dados centralizado armazena as reservas realizadas em todos os servidores. A comunicação entre cliente e servidor é feita via HTTP, com o cliente enviando solicitações RESTful para autenticação, escolha de servidor e reserva de assentos.
 </p>
 
+<p style="text-align: justify;">
+   O diagrama a seguir, exibe como é feita a conexão entre o cliente e os servidores, por meio de uma interface principal, responsável pelo gerenciamento dos trechos ofertados por cada servidor:
+</p>
+
+![Conexão entre Servidor e Cliente](https://github.com/user-attachments/assets/9de5a24b-d21a-4861-9952-9de69e19192e)
+
 ## 2.1 Arquitetura e Protocolo de Comunicação
 
 <p style="text-align: justify;">
@@ -49,6 +55,12 @@
   <li><b>GET e POST /reservar/&lt;viagem_id&gt;/&lt;trecho_id&gt;:</b> Permite ao cliente visualizar detalhes do trecho e reservar um assento em uma poltrona específica.</li>
   <li><b>GET /visualizar-reservas:</b> Mostra as reservas já confirmadas para o cliente.</li>
 </ul>
+
+<p style="text-align: justify">
+  O diagrama a seguir mostra o fluxo de uso do Programa a partir do momento que o cliente entra no link até a efetuação de uma compra:
+</p>
+
+  ![Fluxo de Compra](https://github.com/user-attachments/assets/888d26d7-ba83-4aba-952c-3ef1d81c0b52)
 
 ## 2.2 Controle de Concorrência e Tratamento de Conexões Simultâneas
 
