@@ -33,7 +33,7 @@
                 {% endfor %}
             </tbody>
         </table>
-        <a href="{{ url_for('visualizar_reservas', cliente_id=session['cliente_id']) }}" class="btn btn-success">Minhas Reservas</a>
+        <a href="{{ url_for('minhas_reservas', cliente_id=session['cliente_id']) }}" class="btn btn-success">Minhas Reservas</a>
     </div>
 </body>
 </html>
